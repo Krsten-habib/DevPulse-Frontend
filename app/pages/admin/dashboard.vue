@@ -14,6 +14,7 @@ const { data: queryResponse, isLoading, isError } = useQuery<PendingUsersRespons
       method: 'GET'
       
     })
+    
   }
 })
 
