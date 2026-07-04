@@ -12,6 +12,7 @@ const { data: queryResponse, isLoading, isError } = useQuery<PendingUsersRespons
   queryFn: async () => {
     return await api.request<PendingUsersResponse>('/admin/users/pending', {
       method: 'GET'
+      
     })
   }
 })
