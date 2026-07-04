@@ -8,7 +8,6 @@ const api = useApiClient()
 
 const projectId = computed(() => Number(route.params.projectId))
 
-// ─── Fetch Single Project from Real API ───
 const { data: projectData, isLoading: isLoadingProject } = useQuery<SingleProjectResponse>({
   queryKey: ['project-detail', projectId],
   queryFn: () => api.request<SingleProjectResponse>(`/project-ideas/${projectId.value}`),
@@ -17,8 +16,6 @@ const { data: projectData, isLoading: isLoadingProject } = useQuery<SingleProjec
 
 const project = computed<ProjectIdea | null>(() => projectData.value?.data?.project_idea ?? null)
 
-// ─── Mock: Team data for this project (will be replaced when team API is available) ───
-// TODO: Replace with real API call when available
 const team = ref({
   id: 3,
   status: 'forming',
@@ -40,14 +37,12 @@ const team = ref({
   ]
 })
 
-// ─── Computed: Check if team is complete ───
 const isTeamComplete = computed(() => {
   if (!project.value) return false
   
 return team.value.members.length >= project.value.team_size
 })
 
-// ─── Helpers ───
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr)
   
