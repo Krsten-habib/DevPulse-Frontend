@@ -1,50 +1,7 @@
 <script setup lang="ts">
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
-// ─── Types ───
-interface Supervisor {
-  id: number
-  name: string
-  email: string
-  academic_title: string
-  specialization: string
-}
 
-interface SupervisorMatch {
-  supervisor: Supervisor
-  matched_interests: string[]
-  missing_interests: string[]
-  match_percentage: number
-}
-
-interface SupervisorMatchResponse {
-  status: boolean
-  message: string
-  data: {
-    data: SupervisorMatch[]
-    meta: {
-      current_page: number
-      last_page: number
-      per_page: number
-      total: number
-    }
-  }
-}
-
-interface SubmitProposalResponse {
-  status: boolean
-  message: string
-  data: {
-    proposal: {
-      id: number
-      status: string
-      supervisor: string
-      [key: string]: any
-    }
-  }
-}
-
-// ─── Setup ───
 const route = useRoute()
 const router = useRouter()
 const api = useApiClient()
@@ -57,7 +14,6 @@ const projectId = computed(() => {
 return id ? Number(id) : 0
 })
 
-// ─── Load proposalId from localStorage ───
 const proposalId = ref<number | null>(null)
 
 const loadProposalId = () => {
@@ -69,7 +25,6 @@ const loadProposalId = () => {
 
 loadProposalId()
 
-// ─── Fetch Project Details for title ───
 const { data: projectData } = useQuery({
   queryKey: ['project-detail', projectId],
   queryFn: () => api.request(`/project-ideas/${projectId.value}`),
@@ -78,7 +33,6 @@ const { data: projectData } = useQuery({
 
 const projectTitle = computed(() => projectData.value?.data?.project_idea?.title || 'Loading...')
 
-// ─── Fetch Matching Supervisors ───
 const { data: matchesData, isLoading: isLoadingMatches } = useQuery<SupervisorMatchResponse>({
   queryKey: ['supervisor-matches', projectId],
   queryFn: () => api.request<SupervisorMatchResponse>(`/project-ideas/${projectId.value}/matching/supervisors`),
@@ -87,7 +41,6 @@ const { data: matchesData, isLoading: isLoadingMatches } = useQuery<SupervisorMa
 
 const supervisors = computed(() => matchesData.value?.data?.data || [])
 
-// ─── Submit Proposal to Supervisor Mutation ───
 const { mutate: submitToSupervisor, isPending: isSubmitting } = useMutation<
   SubmitProposalResponse,
   Error,
@@ -101,9 +54,7 @@ const { mutate: submitToSupervisor, isPending: isSubmitting } = useMutation<
   },
   onSuccess: (res) => {
     appToast.success('Success', res.message || 'Proposal submitted to supervisor successfully')
-    // Invalidate proposal query to refresh data
     queryClient.invalidateQueries({ queryKey: ['project-proposal'] })
-    // Go back to project workspace
     router.push(`/student/project-work-space/${projectId.value}`)
   },
   onError: (err) => {
@@ -111,7 +62,6 @@ const { mutate: submitToSupervisor, isPending: isSubmitting } = useMutation<
   }
 })
 
-// ─── Handle supervisor selection ───
 const selectedSupervisor = ref<number | null>(null)
 
 const handleSelectSupervisor = (supervisorId: number) => {
@@ -124,12 +74,10 @@ return
   submitToSupervisor(supervisorId)
 }
 
-// ─── Navigation ───
 const goBack = () => {
   router.push(`/student/project-work-space/${projectId.value}`)
 }
 
-// ─── Get match color based on percentage ───
 const getMatchColor = (percentage: number) => {
   if (percentage >= 80) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
   if (percentage >= 50) return 'text-amber-400 bg-amber-500/10 border-amber-500/20'
